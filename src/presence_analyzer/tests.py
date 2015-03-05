@@ -10,6 +10,9 @@ import unittest
 from presence_analyzer import main
 from presence_analyzer import utils
 from presence_analyzer import views
+from presence_analyzer.utils import mean
+from presence_analyzer.utils import seconds_since_midnight
+from presence_analyzer.utils import interval
 
 TEST_DATA_CSV = os.path.join(
     os.path.dirname(__file__), '..', '..', 'runtime', 'data', 'test_data.csv'
@@ -18,6 +21,7 @@ TEST_DATA_CSV = os.path.join(
 
 # pylint: disable=maybe-no-member, too-many-public-methods
 class PresenceAnalyzerViewsTestCase(unittest.TestCase):
+
     """
     Views tests.
     """
@@ -54,8 +58,32 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(len(data), 2)
         self.assertDictEqual(data[0], {u'user_id': 10, u'name': u'User 10'})
 
+    def test_mean_time_weekday_view(self):
+        """
+        Test mean presence time of given user grouped by weekday.
+        """
+
+        bad_url = '/api/v1/mean_time_weekday/%s' % '9'
+        good_url = '/api/v1/mean_time_weekday/%s' % '11'
+        resp = self.client.get(bad_url)
+        self.assertEqual(resp.status_code, 404)
+        resp = self.client.get(good_url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_presence_weekday_view(self):
+        """
+        Test total presence time of given user grouped by weekday.
+        """
+        bad_url = '/api/v1/presence_weekday/%s' % '9'
+        good_url = '/api/v1/presence_weekday/%s' % '11'
+        resp = self.client.get(bad_url)
+        self.assertEqual(resp.status_code, 404)
+        resp = self.client.get(good_url)
+        self.assertEqual(resp.status_code, 200)
+
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
+
     """
     Utility functions tests.
     """
@@ -65,6 +93,7 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         Before each test, set up a environment.
         """
         main.app.config.update({'DATA_CSV': TEST_DATA_CSV})
+        self.test_list = [29272, 29680, 86112]
 
     def tearDown(self):
         """
@@ -85,6 +114,36 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         self.assertEqual(
             data[10][sample_date]['start'],
             datetime.time(9, 39, 5)
+        )
+
+    def test_mean(self):
+        """
+        Test calculating mean
+        """
+        self.assertEqual(mean(self.test_list), 48354.666666666664)
+        self.assertEqual(mean([]), 0)
+        self.assertIsInstance(mean(self.test_list), float)
+
+    def test_seconds_since_midnight(self):
+        """
+        Test calculating amount of seconds since midnight.
+        """
+        self.assertEqual(seconds_since_midnight(datetime.time(2, 39, 1)), 9541)
+        self.assertEqual(seconds_since_midnight(datetime.time(0, 0, 0)), 0)
+        self.assertEqual(
+            seconds_since_midnight(datetime.time(23, 59, 59)), 86399)
+        self.assertNotEqual(
+            seconds_since_midnight(datetime.time(1, 12, 59)), 0)
+
+    def test_interval(self):
+        """
+        Test calculating inverval in seconds between two datetime.time objects.
+        """
+        self.assertEqual(
+            interval(datetime.time(8, 0, 0), datetime.time(16, 0, 0)), 28800
+        )
+        self.assertEqual(
+            interval(datetime.time(8, 0, 0), datetime.time(8, 0, 0)), 0
         )
 
 
