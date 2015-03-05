@@ -9,7 +9,7 @@ import unittest
 
 from presence_analyzer import main
 from presence_analyzer import utils
-from presence_analyzer import views
+from presence_analyzer import views# pylint: disable=unused-import
 from presence_analyzer.utils import mean
 from presence_analyzer.utils import seconds_since_midnight
 from presence_analyzer.utils import interval
