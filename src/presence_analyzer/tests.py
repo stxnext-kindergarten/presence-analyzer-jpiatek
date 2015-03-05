@@ -2,17 +2,17 @@
 """
 Presence analyzer unit tests.
 """
-import os.path
-import json
 import datetime
+import json
+import os.path
 import unittest
 
+from presence_analyzer import views  # pylint: disable=unused-import
 from presence_analyzer import main
 from presence_analyzer import utils
-from presence_analyzer import views# pylint: disable=unused-import
+from presence_analyzer.utils import interval
 from presence_analyzer.utils import mean
 from presence_analyzer.utils import seconds_since_midnight
-from presence_analyzer.utils import interval
 
 TEST_DATA_CSV = os.path.join(
     os.path.dirname(__file__), '..', '..', 'runtime', 'data', 'test_data.csv'
@@ -93,7 +93,6 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         Before each test, set up a environment.
         """
         main.app.config.update({'DATA_CSV': TEST_DATA_CSV})
-        self.test_list = [29272, 29680, 86112]
 
     def tearDown(self):
         """
@@ -120,7 +119,7 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         """
         Test calculating mean
         """
-        self.assertEqual(mean(self.test_list), 48354.666666666664)
+        self.assertEqual(mean([29272, 29680, 86112]), 48354.666666666664)
         self.assertEqual(mean([]), 0)
         self.assertIsInstance(mean(self.test_list), float)
 
