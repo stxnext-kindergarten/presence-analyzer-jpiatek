@@ -121,7 +121,7 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         """
         self.assertEqual(mean([29272, 29680, 86112]), 48354.666666666664)
         self.assertEqual(mean([]), 0)
-        self.assertIsInstance(mean(self.test_list), float)
+        self.assertIsInstance(mean([29272, 29680, 86112]), float)
 
     def test_seconds_since_midnight(self):
         """
