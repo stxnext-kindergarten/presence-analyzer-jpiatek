@@ -10,9 +10,11 @@ import unittest
 from presence_analyzer import views  # pylint: disable=unused-import
 from presence_analyzer import main
 from presence_analyzer import utils
+from presence_analyzer.utils import group_start_end
 from presence_analyzer.utils import interval
 from presence_analyzer.utils import mean
 from presence_analyzer.utils import seconds_since_midnight
+
 
 TEST_DATA_CSV = os.path.join(
     os.path.dirname(__file__), '..', '..', 'runtime', 'data', 'test_data.csv'
@@ -144,6 +146,15 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         self.assertEqual(
             interval(datetime.time(8, 0, 0), datetime.time(8, 0, 0)), 0
         )
+
+    def test_group_start_end(self):
+        """
+        Test calculating average start stop presence
+        """
+        data = utils.get_data()
+        self.assertEqual(group_start_end(data[11])[0][1], '9:19:50')
+        self.assertEqual(len(group_start_end(data[11])), 2)
+        self.assertEqual(group_start_end(data[10])[0], '9:19:50')
 
 
 def suite():

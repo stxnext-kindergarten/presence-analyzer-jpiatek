@@ -4,15 +4,15 @@ Helper functions used in views.
 """
 
 import csv
-from json import dumps
-from functools import wraps
+import logging
 from datetime import datetime
+from functools import wraps
+from json import dumps
 
 from flask import Response
 
 from presence_analyzer.main import app
 
-import logging
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
@@ -71,6 +71,18 @@ def get_data():
     return data
 
 
+def seconds_to_time(seconds):
+    """
+    Calculate time HH:MM:SS from seconds since midnight
+    """
+    if seconds == 0:
+        return None
+    minuts, seconds = divmod(seconds, 60)
+    hours, minuts = divmod(minuts, 60)
+    hms = "%d:%02d:%02d" % (hours, minuts, seconds)
+    return hms
+
+
 def group_by_weekday(items):
     """
     Groups presence entries by weekday.
@@ -81,6 +93,24 @@ def group_by_weekday(items):
         end = items[date]['end']
         result[date.weekday()].append(interval(start, end))
     return result
+
+
+def group_start_end(items):
+    """
+    Caclulate average start end by weekday. Returns tuple with two lists
+    """
+
+    result_starts = [[], [], [], [], [], [], []]
+    result_ends = [[], [], [], [], [], [], []]
+
+    for date in items:
+        start = items[date]['start']
+        end = items[date]['end']
+        result_starts[date.weekday()].append(seconds_since_midnight(start))
+        result_ends[date.weekday()].append(seconds_since_midnight(end))
+    result_starts = [seconds_to_time(mean(x)) if seconds_to_time(mean(x)) is not None else []  for x in result_starts]
+    result_ends = [seconds_to_time(mean(x)) if seconds_to_time(mean(x)) is not None else [] for x in result_ends]
+    return result_starts, result_ends
 
 
 def seconds_since_midnight(time):
