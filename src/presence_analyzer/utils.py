@@ -108,8 +108,10 @@ def group_start_end(items):
         end = items[date]['end']
         result_starts[date.weekday()].append(seconds_since_midnight(start))
         result_ends[date.weekday()].append(seconds_since_midnight(end))
-    result_starts = [seconds_to_time(mean(x)) if seconds_to_time(mean(x)) is not None else []  for x in result_starts]
-    result_ends = [seconds_to_time(mean(x)) if seconds_to_time(mean(x)) is not None else [] for x in result_ends]
+    result_starts = [seconds_to_time(mean(x)) if seconds_to_time(
+        mean(x)) is not None else [] for x in result_starts]
+    result_ends = [seconds_to_time(mean(x)) if seconds_to_time(
+        mean(x)) is not None else [] for x in result_ends]
     return result_starts, result_ends
 
 
