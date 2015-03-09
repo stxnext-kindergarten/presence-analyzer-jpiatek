@@ -75,8 +75,6 @@ def seconds_to_time(seconds):
     """
     Calculate time HH:MM:SS from seconds since midnight
     """
-    if seconds == 0:
-        return None
     minuts, seconds = divmod(seconds, 60)
     hours, minuts = divmod(minuts, 60)
     hms = "%d:%02d:%02d" % (hours, minuts, seconds)
@@ -99,7 +97,6 @@ def group_start_end(items):
     """
     Caclulate average start end by weekday. Returns tuple with two lists
     """
-
     result_starts = [[], [], [], [], [], [], []]
     result_ends = [[], [], [], [], [], [], []]
 
@@ -108,10 +105,10 @@ def group_start_end(items):
         end = items[date]['end']
         result_starts[date.weekday()].append(seconds_since_midnight(start))
         result_ends[date.weekday()].append(seconds_since_midnight(end))
-    result_starts = [seconds_to_time(mean(x)) if seconds_to_time(
-        mean(x)) is not None else [] for x in result_starts]
-    result_ends = [seconds_to_time(mean(x)) if seconds_to_time(
-        mean(x)) is not None else [] for x in result_ends]
+    result_starts = [
+        seconds_to_time(mean(x)) if len(x) > 0 else x for x in result_starts]
+    result_ends = [
+        seconds_to_time(mean(x)) if len(x) > 0 else x for x in result_ends]
     return result_starts, result_ends
 
 
