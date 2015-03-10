@@ -9,10 +9,12 @@ import unittest
 
 from presence_analyzer import views  # pylint: disable=unused-import
 from presence_analyzer import main
-from presence_analyzer import utils
+from presence_analyzer.utils import get_data
+from presence_analyzer.utils import group_start_end
 from presence_analyzer.utils import interval
 from presence_analyzer.utils import mean
 from presence_analyzer.utils import seconds_since_midnight
+
 
 TEST_DATA_CSV = os.path.join(
     os.path.dirname(__file__), '..', '..', 'runtime', 'data', 'test_data.csv'
@@ -81,6 +83,17 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         resp = self.client.get(good_url)
         self.assertEqual(resp.status_code, 200)
 
+    def test_resence_start_end_view(self):
+        """
+        Test average time start-end of given user grouped by weekday.
+        """
+        bad_url = '/api/v1/presence_start_end/%s' % '9'
+        good_url = '/api/v1/presence_start_end/%s' % '11'
+        resp = self.client.get(bad_url)
+        self.assertEqual(resp.status_code, 404)
+        resp = self.client.get(good_url)
+        self.assertEqual(resp.status_code, 200)
+
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
 
@@ -104,7 +117,7 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         """
         Test parsing of CSV file.
         """
-        data = utils.get_data()
+        data = get_data()
         self.assertIsInstance(data, dict)
         self.assertItemsEqual(data.keys(), [10, 11])
         sample_date = datetime.date(2013, 9, 10)
@@ -144,6 +157,16 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         self.assertEqual(
             interval(datetime.time(8, 0, 0), datetime.time(8, 0, 0)), 0
         )
+
+    def test_group_start_end(self):
+        """
+        Test calculating average start stop presence
+        """
+        data = get_data()
+        self.assertEqual(group_start_end(data[11])[0][1], '9:19:50')
+        self.assertEqual(len(group_start_end(data[11])), 2)
+        self.assertEqual(group_start_end(
+            data[10])[0], [[], '9:39:05', '9:19:52', '10:48:46', [], [], []])
 
 
 def suite():
