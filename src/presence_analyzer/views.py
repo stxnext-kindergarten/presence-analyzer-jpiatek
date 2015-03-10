@@ -7,6 +7,8 @@ import calendar
 from flask import abort
 from flask import redirect
 
+from flask.ext.mako import render_template
+
 from presence_analyzer.main import app
 from presence_analyzer.utils import get_data
 from presence_analyzer.utils import group_by_weekday
@@ -23,7 +25,7 @@ def mainpage():
     """
     Redirects to front page.
     """
-    return redirect('/static/presence_weekday.html')
+    return redirect('/presence_weekday')
 
 
 @app.route('/api/v1/users', methods=['GET'])
@@ -97,3 +99,18 @@ def presence_start_end_view(user_id):
         for weekday, start_end in enumerate(zip(weekdays[0], weekdays[1]))
     ]
     return result
+
+
+@app.route('/presence_start_end')
+def hello(name='start end'):
+    return render_template('presence_start_end.html', name=name)
+
+
+@app.route('/presence_weekday')
+def hello1(name='weekdays'):
+    return render_template('presence_weekday.html', name=name)
+
+
+@app.route('/mean_time_weekday')
+def hello2(name='mean time'):
+    return render_template('mean_time_weekday.html', name=name)
