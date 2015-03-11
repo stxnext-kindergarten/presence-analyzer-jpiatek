@@ -11,8 +11,8 @@ MAIN_DATA_CSV = os.path.join(
 )
 
 
-app = Flask(
-    __name__, template_folder="templates")  # pylint: disable=invalid-name
+app = Flask(  # pylint: disable=invalid-name
+    __name__, template_folder="templates")
 mako = MakoTemplates(app)  # pylint: disable=invalid-name
 
 app.config.update(
