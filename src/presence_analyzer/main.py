@@ -4,7 +4,7 @@ Flask app initialization.
 """
 import os.path
 from flask import Flask
-from flask.ext.mako import MakoTemplates
+from flask_mako import MakoTemplates
 
 MAIN_DATA_CSV = os.path.join(
     os.path.dirname(__file__), '..', '..', 'runtime', 'data', 'sample_data.csv'
@@ -13,7 +13,7 @@ MAIN_DATA_CSV = os.path.join(
 
 app = Flask(__name__)  # pylint: disable=invalid-name
 app.template_folder = "templates"
-mako = MakoTemplates(app)
+mako = MakoTemplates(app)  # pylint: disable=invalid-name
 
 app.config.update(
     DEBUG=True,
