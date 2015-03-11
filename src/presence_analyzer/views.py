@@ -7,6 +7,8 @@ import calendar
 from flask import abort
 from flask import redirect
 
+from flask_mako import render_template
+
 from presence_analyzer.main import app
 from presence_analyzer.utils import get_data
 from presence_analyzer.utils import group_by_weekday
@@ -23,7 +25,7 @@ def mainpage():
     """
     Redirects to front page.
     """
-    return redirect('/static/presence_weekday.html')
+    return redirect('/presence_weekday')
 
 
 @app.route('/api/v1/users', methods=['GET'])
@@ -41,7 +43,7 @@ def users_view():
 
 @app.route('/api/v1/mean_time_weekday/<int:user_id>', methods=['GET'])
 @jsonify
-def mean_time_weekday_view(user_id):
+def mean_time_weekday_api(user_id):
     """
     Returns mean presence time of given user grouped by weekday.
     """
@@ -61,7 +63,7 @@ def mean_time_weekday_view(user_id):
 
 @app.route('/api/v1/presence_weekday/<int:user_id>', methods=['GET'])
 @jsonify
-def presence_weekday_view(user_id):
+def presence_weekday_api(user_id):
     """
     Returns total presence time of given user grouped by weekday.
     """
@@ -82,7 +84,7 @@ def presence_weekday_view(user_id):
 
 @app.route('/api/v1/presence_start_end/<int:user_id>', methods=['GET'])
 @jsonify
-def presence_start_end_view(user_id):
+def presence_start_end_api(user_id):
     """
     Returns average time start-end of given user grouped by weekday.
     """
@@ -97,3 +99,30 @@ def presence_start_end_view(user_id):
         for weekday, start_end in enumerate(zip(weekdays[0], weekdays[1]))
     ]
     return result
+
+
+@app.route('/presence_weekday')
+def presence_weekday_view():
+    """
+    Render template for presence weekday
+    """
+    return render_template('presence_weekday.html',
+                           name='Presence by weekday')
+
+
+@app.route('/mean_time_weekday')
+def mean_time_weekday_view():
+    """
+    Render template for mean time weekday
+    """
+    return render_template('mean_time_weekday.html',
+                           name='Presence mean time')
+
+
+@app.route('/presence_start_end')
+def presence_start_end_view():
+    """
+    Render template for start end
+    """
+    return render_template('presence_start_end.html',
+                           name='Presence start-end')

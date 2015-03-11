@@ -1,0 +1,25 @@
+<%inherit file="base.html"/>
+<%block name="head">
+    <script type="text/javascript">
+        google.load("visualization", "1", {packages:["corechart"], 'language': 'en'});
+
+        (function($) {
+            $(document).ready(function(){      
+                var loading = $('#loading');
+                load_users();
+                $('#user_id').change(function(){
+                    selected_user = select_user();
+                    var chart_div = $('#chart_div');
+                    $.getJSON("/api/v1/presence_weekday/"+selected_user, function(result) {
+                        var data = google.visualization.arrayToDataTable(result);
+                        var options = {};
+                        chart_div.show();
+                        loading.hide();
+                        var chart = new google.visualization.PieChart(chart_div[0]);
+                        chart.draw(data, options);
+                    });
+                });
+            });
+        })(jQuery);
+    </script>
+</%block>

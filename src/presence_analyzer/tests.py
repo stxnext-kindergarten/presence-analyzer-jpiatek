@@ -47,7 +47,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         """
         resp = self.client.get('/')
         self.assertEqual(resp.status_code, 302)
-        assert resp.headers['Location'].endswith('/presence_weekday.html')
+        assert resp.headers['Location'].endswith('/presence_weekday')
 
     def test_api_users(self):
         """
@@ -60,7 +60,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(len(data), 2)
         self.assertDictEqual(data[0], {u'user_id': 10, u'name': u'User 10'})
 
-    def test_mean_time_weekday_view(self):
+    def test_mean_time_weekday_api(self):
         """
         Test mean presence time of given user grouped by weekday.
         """
@@ -72,7 +72,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         resp = self.client.get(good_url)
         self.assertEqual(resp.status_code, 200)
 
-    def test_presence_weekday_view(self):
+    def test_presence_weekday_api(self):
         """
         Test total presence time of given user grouped by weekday.
         """
@@ -83,7 +83,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         resp = self.client.get(good_url)
         self.assertEqual(resp.status_code, 200)
 
-    def test_resence_start_end_view(self):
+    def test_presence_start_end_api(self):
         """
         Test average time start-end of given user grouped by weekday.
         """
@@ -92,6 +92,27 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         resp = self.client.get(bad_url)
         self.assertEqual(resp.status_code, 404)
         resp = self.client.get(good_url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_presence_weekday_view(self):
+        """
+        Test presence weekday view
+        """
+        resp = self.client.get('/presence_weekday')
+        self.assertEqual(resp.status_code, 200)
+
+    def test_mean_time_weekday_view(self):
+        """
+        Test mean time weekday view
+        """
+        resp = self.client.get('/mean_time_weekday')
+        self.assertEqual(resp.status_code, 200)
+
+    def test_presence_start_end_view(self):
+        """
+        Test presence start end_ wiew
+        """
+        resp = self.client.get('/presence_start_end')
         self.assertEqual(resp.status_code, 200)
 
 
