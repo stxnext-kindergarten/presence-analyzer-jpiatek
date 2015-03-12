@@ -10,6 +10,10 @@
                 $('#user_id').change(function(){
                     selected_user = select_user();
                     var chart_div = $('#chart_div');
+
+                    get_url_photo(selected_user).done(function(data){
+                        $("#user-photo").html("<img src="+data.url+">");
+                    });
                     $.getJSON("/api/v1/presence_weekday/"+selected_user, function(result) {
                         var data = google.visualization.arrayToDataTable(result);
                         var options = {};
@@ -18,6 +22,8 @@
                         var chart = new google.visualization.PieChart(chart_div[0]);
                         chart.draw(data, options);
                     });
+                    
+                    
                 });
             });
         })(jQuery);

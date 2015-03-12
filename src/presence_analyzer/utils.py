@@ -10,10 +10,12 @@ from functools import wraps
 from json import dumps
 
 from flask import Response
+from lxml import etree
 
 from presence_analyzer.main import app
 
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
+TREE = etree.parse('/home/jpiatek/users.xml')  # pylint: disable=no-member
 
 
 def jsonify(function):
@@ -69,6 +71,52 @@ def get_data():
             data.setdefault(user_id, {})[date] = {'start': start, 'end': end}
 
     return data
+
+
+def get_users_from_xml():
+    """
+    Extracts users data from xml file. Returns dict.
+    It creates structure like this:
+    {'151': {'avatar': '/api/images/users/151', 'name': 'Dawid J.'}}
+    """
+
+    users_data = {}
+    for element in TREE.iter('user'):
+        users_data[element.get('id')] = {
+            'avatar': element[0].text, 'name': element[1].text}
+    return users_data
+
+
+def get_users():
+    """
+    Comparing lists ID's extracted from xml file and csv.
+    If ID from CSV file is not in XML file adding default values.
+    Structure of dict is below:
+
+    {'151': {'avatar': '/api/images/users/151', 'name': 'Dawid J.'},
+    18: {'avatar': '/api/images/users/00', 'name': 'User 18'}}
+    """
+
+    out = {}
+    data = get_data()
+    users = get_users_from_xml()
+    for i in data.keys():
+        user = users.get(str(i))
+        if user:
+            out[i] = user
+        else:
+            out[i] = {
+                'avatar': '/api/images/users/00', 'name': 'User {0}'.format(i)}
+    return out
+
+
+def get_server():
+    """
+    Extracts hostname and protocol data from xml file. Returns string.
+    """
+    host = TREE.find('server')[2].text
+    protocol = TREE.find('server')[0].text
+    return '{0}://{1}'.format(host, protocol)
 
 
 def seconds_to_time(seconds):
