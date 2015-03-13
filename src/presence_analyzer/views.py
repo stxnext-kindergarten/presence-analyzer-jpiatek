@@ -4,10 +4,14 @@ Defines views.
 """
 
 import calendar
+import logging
+
 from flask import abort
 from flask import redirect
 
 from flask_mako import render_template
+
+from operator import itemgetter
 
 from presence_analyzer.main import app
 from presence_analyzer.utils import get_data
@@ -15,9 +19,12 @@ from presence_analyzer.utils import group_by_weekday
 from presence_analyzer.utils import group_start_end
 from presence_analyzer.utils import jsonify
 from presence_analyzer.utils import mean
+from presence_analyzer.utils import get_users
+from presence_analyzer.utils import get_server
 
-import logging
+
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
+HOST = get_server()
 
 
 @app.route('/')
@@ -34,11 +41,13 @@ def users_view():
     """
     Users listing for dropdown.
     """
-    data = get_data()
-    return [
-        {'user_id': i, 'name': 'User {0}'.format(str(i))}
-        for i in data.keys()
-    ]
+    users = get_users()
+
+    id_username_list = [
+        {'user_id': i, 'name': users[i].get('name')}
+        for i in users.keys()]
+    sorted_by_username = sorted(id_username_list, key=itemgetter('name'))
+    return sorted_by_username
 
 
 @app.route('/api/v1/mean_time_weekday/<int:user_id>', methods=['GET'])
@@ -99,6 +108,20 @@ def presence_start_end_api(user_id):
         for weekday, start_end in enumerate(zip(weekdays[0], weekdays[1]))
     ]
     return result
+
+
+@app.route('/api/v1/get_url_photo/<int:user_id>', methods=['GET'])
+@jsonify
+def get_url_photo(user_id):
+    """
+    Returns url for user photo
+    """
+
+    users = get_users()
+    if user_id not in users.keys():
+        log.debug('User %s not found!', user_id)
+        abort(404)
+    return {'url': HOST + users[user_id].get('avatar')}
 
 
 @app.route('/presence_weekday')

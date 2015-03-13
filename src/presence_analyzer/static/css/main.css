@@ -52,3 +52,9 @@ body {
     color: black;
     font-weight: bold;
 }
+
+#user-photo {
+    float:right;
+    margin-top: -62px;
+    margin-right: -9px;
+}

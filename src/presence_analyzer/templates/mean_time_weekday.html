@@ -12,15 +12,18 @@
         (function($) {
             $(document).ready(function(){
                 var loading = $('#loading');
-                load_users();
+                PRESENCE.CUSTOM.load_users();
                 $('#user_id').change(function(){
-                    selected_user = select_user();
+                    selected_user = PRESENCE.CUSTOM.select_user();
                     var chart_div = $('#chart_div');
+                    PRESENCE.CUSTOM.get_url_photo(selected_user).done(function(data){
+                        $("#user-photo").html("<img src="+data.url+">");
+                    });
                     $.getJSON("/api/v1/mean_time_weekday/"+selected_user, function(result) {
                         $.each(result, function(index, value) {
                             value[1] = parseInterval(value[1]);
                         });
-                        console.log(result);
+                        //console.log(result);
                         var data = new google.visualization.DataTable();
                         data.addColumn('string', 'Weekday');
                         data.addColumn('datetime', 'Mean time (h:m:s)');
