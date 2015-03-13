@@ -9,7 +9,9 @@ import unittest
 
 from presence_analyzer import views  # pylint: disable=unused-import
 from presence_analyzer import main
+from presence_analyzer.cron import fetch_xml_file
 from presence_analyzer.utils import get_data
+from presence_analyzer.utils import get_users
 from presence_analyzer.utils import group_start_end
 from presence_analyzer.utils import interval
 from presence_analyzer.utils import mean
@@ -18,6 +20,10 @@ from presence_analyzer.utils import seconds_since_midnight
 
 TEST_DATA_CSV = os.path.join(
     os.path.dirname(__file__), '..', '..', 'runtime', 'data', 'test_data.csv'
+)
+
+TEST_DATA_XML = os.path.join(
+    os.path.dirname(__file__), '..', '..', 'runtime', 'data', 'test_data.xml'
 )
 
 
@@ -57,8 +63,8 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.content_type, 'application/json')
         data = json.loads(resp.data)
-        self.assertEqual(len(data), 2)
-        self.assertDictEqual(data[0], {u'user_id': 10, u'name': u'User 10'})
+        self.assertEqual(len(data), 3)
+        self.assertDictEqual(data[0], {u'user_id': 11, u'name': u'Maciej D.'})
 
     def test_mean_time_weekday_api(self):
         """
@@ -115,6 +121,19 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         resp = self.client.get('/presence_start_end')
         self.assertEqual(resp.status_code, 200)
 
+    def test_get_url_photo(self):
+        """
+        Test url photo
+        """
+        resp = self.client.get('/api/v1/get_url_photo/999')
+        self.assertEqual(resp.status_code, 404)
+        resp = self.client.get('/api/v1/get_url_photo/10')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.data,
+            '{"url": "https://intranet.stxnext.pl/api/images/users/10"}'
+        )
+
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
 
@@ -127,6 +146,7 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         Before each test, set up a environment.
         """
         main.app.config.update({'DATA_CSV': TEST_DATA_CSV})
+        main.app.config.update({'DATA_XML': TEST_DATA_XML})
 
     def tearDown(self):
         """
@@ -140,7 +160,7 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         """
         data = get_data()
         self.assertIsInstance(data, dict)
-        self.assertItemsEqual(data.keys(), [10, 11])
+        self.assertItemsEqual(data.keys(), [10, 11, 37])
         sample_date = datetime.date(2013, 9, 10)
         self.assertIn(sample_date, data[10])
         self.assertItemsEqual(data[10][sample_date].keys(), ['start', 'end'])
@@ -148,6 +168,15 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
             data[10][sample_date]['start'],
             datetime.time(9, 39, 5)
         )
+
+    def test_get_users_from_xml(self):
+        """
+        Test extracting data from xml file
+        """
+        users = get_users()
+        self.assertEqual(
+            users.get(11),
+            {'avatar': '/api/images/users/11', 'name': 'Maciej D.'})
 
     def test_mean(self):
         """
@@ -190,6 +219,33 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
             data[10])[0], [[], '9:39:05', '9:19:52', '10:48:46', [], [], []])
 
 
+class PresenceAnalyzerCronTestCase(unittest.TestCase):
+
+    """
+    Cron tests
+    """
+
+    def setUp(self):
+        """
+        Before each test, set up a environment.
+        """
+        self.client = main.app.test_client()
+        self.url = 'http://sargo.bolt.stxnext.pl/users.xml'
+
+    def tearDown(self):
+        """
+        Get rid of unused objects after each test.
+        """
+        pass
+
+    def test_cron(self):
+        """
+        Cron tests
+        """
+        self.assertEqual(fetch_xml_file(self.url), 'OK')
+        self.assertFalse(fetch_xml_file(self.url + '11'))
+
+
 def suite():
     """
     Default test suite.
@@ -197,6 +253,7 @@ def suite():
     base_suite = unittest.TestSuite()
     base_suite.addTest(unittest.makeSuite(PresenceAnalyzerViewsTestCase))
     base_suite.addTest(unittest.makeSuite(PresenceAnalyzerUtilsTestCase))
+    base_suite.addTest(unittest.makeSuite(PresenceAnalyzerCronTestCase))
     return base_suite
 
 

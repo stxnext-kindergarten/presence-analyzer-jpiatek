@@ -15,7 +15,7 @@ from lxml import etree
 from presence_analyzer.main import app
 
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
-TREE = etree.parse('/home/jpiatek/users.xml')  # pylint: disable=no-member
+TREE = etree.parse(app.config['DATA_XML'])  # pylint: disable=no-member
 
 
 def jsonify(function):

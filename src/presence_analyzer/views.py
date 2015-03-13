@@ -4,10 +4,14 @@ Defines views.
 """
 
 import calendar
+import logging
+
 from flask import abort
 from flask import redirect
 
 from flask_mako import render_template
+
+from operator import itemgetter
 
 from presence_analyzer.main import app
 from presence_analyzer.utils import get_data
@@ -18,7 +22,7 @@ from presence_analyzer.utils import mean
 from presence_analyzer.utils import get_users
 from presence_analyzer.utils import get_server
 
-import logging
+
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 HOST = get_server()
 
@@ -39,10 +43,11 @@ def users_view():
     """
     users = get_users()
 
-    return [
+    id_username_list = [
         {'user_id': i, 'name': users[i].get('name')}
-        for i in users.keys()
-    ]
+        for i in users.keys()]
+    sorted_by_username = sorted(id_username_list, key=itemgetter('name'))
+    return sorted_by_username
 
 
 @app.route('/api/v1/mean_time_weekday/<int:user_id>', methods=['GET'])

@@ -55,5 +55,6 @@ body {
 
 #user-photo {
     float:right;
-    margin-top: -68px;
+    margin-top: -62px;
+    margin-right: -9px;
 }
