@@ -8,6 +8,8 @@ import logging
 from datetime import datetime
 from functools import wraps
 from json import dumps
+from threading import Lock
+from time import time as timer
 
 from flask import Response
 from lxml import etree
@@ -16,6 +18,57 @@ from presence_analyzer.main import app
 
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 TREE = etree.parse(app.config['DATA_XML'])  # pylint: disable=no-member
+
+
+class cache(object): # pylint: disable=invalid-name, too-few-public-methods
+    """
+    Decorator class
+    """
+
+    def __init__(self, seconds):
+        """
+        If there are decorator arguments, the function
+        to be decorated is not passed to the constructor!
+        """
+        self.seconds = seconds
+        self.mem = {}
+        self.timer_dict = {}
+        self.lock = Lock()
+
+    def __call__(self, func):
+        """
+        If there are decorator arguments, __call__() is only called
+        once, as part of the decoration process! You can only give
+        it a single argument, which is the function object.
+        """
+
+        def wrapped_func(*args):
+            """
+            Checking object in cache. If is not, add object to cache
+            """
+
+            self.lock.acquire()
+            try:
+                if func.__name__ in self.mem\
+                        and self.cache_is_valid(func.__name__):
+                    return self.mem.get(func.__name__)
+                else:
+                    self.mem[func.__name__] = func(*args)
+                    return self.mem.get(func.__name__)
+            finally:
+                self.lock.release()
+        return wrapped_func
+
+    def cache_is_valid(self, func_name):
+        """
+        Checking if cache content is not expired
+        """
+        if func_name in self.timer_dict\
+                and not self.timer_dict.get(func_name) < timer():
+            return True
+        else:
+            self.timer_dict[func_name] = timer() + self.seconds
+            return False
 
 
 def jsonify(function):
@@ -34,6 +87,7 @@ def jsonify(function):
     return inner
 
 
+@cache(600)
 def get_data():
     """
     Extracts presence data from CSV file and groups it by user_id.

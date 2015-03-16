@@ -10,12 +10,15 @@ import unittest
 from presence_analyzer import views  # pylint: disable=unused-import
 from presence_analyzer import main
 from presence_analyzer.cron import fetch_xml_file
+from presence_analyzer.utils import cache
 from presence_analyzer.utils import get_data
 from presence_analyzer.utils import get_users
 from presence_analyzer.utils import group_start_end
 from presence_analyzer.utils import interval
 from presence_analyzer.utils import mean
 from presence_analyzer.utils import seconds_since_midnight
+
+from time import time as timer
 
 
 TEST_DATA_CSV = os.path.join(
@@ -217,6 +220,22 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         self.assertEqual(len(group_start_end(data[11])), 2)
         self.assertEqual(group_start_end(
             data[10])[0], [[], '9:39:05', '9:19:52', '10:48:46', [], [], []])
+
+    def test_cache(self):
+        """
+        Cache Tests
+        """
+
+        def dummy_func():
+            """
+            Returns get_data()
+            """
+
+            return get_data()
+
+        test_obj = cache(600)
+        self.assertEqual(test_obj.mem, {})
+        self.assertEqual(dummy_func(), get_data())
 
 
 class PresenceAnalyzerCronTestCase(unittest.TestCase):
