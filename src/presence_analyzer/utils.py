@@ -20,7 +20,8 @@ log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 TREE = etree.parse(app.config['DATA_XML'])  # pylint: disable=no-member
 
 
-class cache(object): # pylint: disable=invalid-name, too-few-public-methods
+class cache(object):  # pylint: disable=invalid-name, too-few-public-methods
+
     """
     Decorator class
     """
