@@ -10,13 +10,13 @@ import unittest
 from presence_analyzer import views  # pylint: disable=unused-import
 from presence_analyzer import main
 from presence_analyzer.cron import fetch_xml_file
+from presence_analyzer.utils import cache
 from presence_analyzer.utils import get_data
 from presence_analyzer.utils import get_users
 from presence_analyzer.utils import group_start_end
 from presence_analyzer.utils import interval
 from presence_analyzer.utils import mean
 from presence_analyzer.utils import seconds_since_midnight
-
 
 TEST_DATA_CSV = os.path.join(
     os.path.dirname(__file__), '..', '..', 'runtime', 'data', 'test_data.csv'
@@ -217,6 +217,42 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         self.assertEqual(len(group_start_end(data[11])), 2)
         self.assertEqual(group_start_end(
             data[10])[0], [[], '9:39:05', '9:19:52', '10:48:46', [], [], []])
+
+    def test_cache(self):
+        """
+        Cache Tests
+        """
+
+        class Testowa(object): # pylint: disable=too-few-public-methods
+
+            """
+            Dummy class
+            """
+
+            def __init__(self):
+                """init"""
+                self.counter = 0
+
+            def count(self):
+                """
+                Every call to this method incrementing counter
+                """
+                self.counter += 1
+                return self.counter
+
+        t_obj = Testowa()
+        cache_obj = cache(2)
+        self.assertNotEqual(cache_obj.cache_is_valid('count'), True)
+        out = cache_obj(t_obj.count)()
+        self.assertEqual(out, 1)
+        out = cache_obj(t_obj.count)()
+        self.assertEqual(out, 1)
+        out = cache_obj(t_obj.count)()
+        out = cache_obj(t_obj.count)()
+        self.assertEqual(out, 1)
+        self.assertDictEqual(cache_obj.mem, {'count': 1})
+        self.assertNotEqual(cache_obj.timer_dict, {})
+        self.assertEqual(cache_obj.cache_is_valid('count'), True)
 
 
 class PresenceAnalyzerCronTestCase(unittest.TestCase):
